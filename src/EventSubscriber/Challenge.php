@@ -45,7 +45,18 @@ class Challenge implements EventSubscriberInterface {
    * Helper function to see if the given response needs handled by this logic.
    */
   protected function applies(Request $request): bool {
-    if (isset($_COOKIE['turnstile_protect_pass'])) {
+    $session = $request->getSession();
+    if ($session->get('turnstile_protect_pass')) {
+      return FALSE;
+    }
+
+    $route_name = $request->attributes->get('_route');
+    if (!in_array($route_name, [
+      "flysystem.files",
+      "flysystem.serve",
+      "view.browse.main",
+      "view.advanced_search.page_1",
+    ])) {
       return FALSE;
     }
 
@@ -86,14 +97,7 @@ class Challenge implements EventSubscriberInterface {
       return count($_GET) == 0;
     }
 
-    // @todo turn protected routes into config
-    $route_name = $request->attributes->get('_route');
-    return in_array($route_name, [
-      "flysystem.files",
-      "flysystem.serve",
-      "view.browse.main",
-      "view.advanced_search.page_1",
-    ]);
+    return TRUE;
   }
 
   /**
