@@ -1,0 +1,8 @@
+name: 'Turnstile Protect'
+type: module
+description: 'Put site routes behind a Cloudflare Turnstile'
+package: Custom
+core_version_requirement: ^10 || ^11
+dependencies:
+  - captcha:captcha
+  - turnstile:turnstile

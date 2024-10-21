@@ -1,0 +1,7 @@
+turnstile_protect.challenge:
+  path: "/challenge"
+  defaults:
+    _title: "Challenge"
+    _form: '\Drupal\turnstile_protect\Form\Challenge'
+  requirements:
+    _permission: 'access content'

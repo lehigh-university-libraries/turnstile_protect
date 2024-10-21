@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for Turnstile Protect module.
+ */
+
+/**
+ * Implements hook_captcha_alter().
+ */
+function turnstile_protect_captcha_alter(&$captcha, $info) {
+  if ($info['module'] !== 'turnstile') {
+    return;
+  }
+
+  // add a javascript callback after the turnstile succeeds
+  $captcha['form']['turnstile_widget']['#markup'] = str_replace('<div', '<div data-callback="turnstileProtectAutoSubmit"', $captcha['form']['turnstile_widget']['#markup']);
+  $captcha['form']['#attached']['library'][] = 'turnstile_protect/challenge';
+}

@@ -1,0 +1,4 @@
+challenge:
+  version: 1.x
+  js:
+    js/challenge.js: {}
