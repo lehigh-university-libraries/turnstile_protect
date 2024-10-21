@@ -23,7 +23,7 @@ flowchart TD
     CANONICAL_URL_BOT -- No --> Continue(Go to original destination)
     PROTECTED_ROUTE -- Yes --> REDIRECT(Redirect to /challenge)
     PROTECTED_ROUTE -- No --> Continue(Go to original destination)
-    REDIRECT --> CHALLENGE(Cloudflare turnstile challenge)
+    REDIRECT --> CHALLENGE{Cloudflare turnstile challenge}
     CHALLENGE -- Pass --> Continue(Go to original destination)
     CHALLENGE -- Fail --> Stuck
 ```
