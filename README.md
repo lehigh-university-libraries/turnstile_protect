@@ -1,14 +1,14 @@
 ## INTRODUCTION
 
-The Turnstile Protect module is a DESCRIBE_THE_MODULE_HERE.
+The Turnstile Protect module is a way to put site routes behind a Cloudflare Turnstile.
 
 The primary use case for this module is:
 
-- Use case #1
-- Use case #2
-- Use case #3
+- You have a route (or routes) on your Drupal site that do not need indexed by search engines you want to protect from excessive crawling
 
-```mermaid.js
+## How it works
+
+```mermaid
 flowchart TD
     Client(Client accesses path on website) --> Cookie{Has client passed turnstile before?}
     Cookie -- Yes --> Continue(Go to original destination)
@@ -30,8 +30,8 @@ flowchart TD
 
 ## REQUIREMENTS
 
-- Turnstile
-- Captcha
+- [Turnstile](https://www.drupal.org/project/turnstile)
+- [Captcha](https://www.drupal.org/project/captcha)
 
 ## INSTALLATION
 
@@ -39,9 +39,10 @@ Install as you would normally install a contributed Drupal module.
 See: https://www.drupal.org/node/895232 for further information.
 
 ## CONFIGURATION
-- Configuration step #1
-- Configuration step #2
-- Configuration step #3
+
+- Follow [the turnstile module install instructions](https://www.drupal.org/project/turnstile)
+- Configure which route(s) to protect - (TODO - implement config settings)
+- If you want to exclude IPs from being protected, configure them in the captcha IP settings on your site at `/admin/config/people/captcha`
 
 ## MAINTAINERS
 
