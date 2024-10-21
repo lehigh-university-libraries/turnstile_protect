@@ -6,13 +6,12 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpFoundation\Request;
-
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
- * Class Challenge.
+ * Redirect protected routes to challenge page.
  */
 class Challenge implements EventSubscriberInterface {
 
@@ -36,39 +35,39 @@ class Challenge implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  static function getSubscribedEvents() {
+  public static function getSubscribedEvents() {
     $events[KernelEvents::REQUEST] = ['protect'];
 
     return $events;
   }
 
   /**
-   * Helper function to see if the given response needs handled by this rate limiter
+   * Helper function to see if the given response needs handled by this logic.
    */
   protected function applies(Request $request): bool {
     if (isset($_COOKIE['turnstile_protect_pass'])) {
       return FALSE;
     }
 
-    // do not challenge logged in users
+    // Do not challenge logged in users.
     if ($this->currentUser->isAuthenticated()) {
       return FALSE;
     }
 
-    // do not challenge IPs whitelisted by captcha module
+    // Do not challenge IPs whitelisted by captcha module.
     $clientIp = $request->getClientIp();
     if (captcha_whitelist_ip_whitelisted($clientIp)) {
       return FALSE;
     }
 
-    // TODO: allow specifying bots
+    // @todo allow specifying bots
     $hostname = gethostbyaddr($clientIp);
     $resolved_ip = gethostbyname($hostname);
     if ($clientIp !== $resolved_ip) {
       return TRUE;
     }
     $parts = explode(".", $hostname);
-    if (count($parts) < 2)  {
+    if (count($parts) < 2) {
       return TRUE;
     }
     $tld = array_pop($parts);
@@ -87,7 +86,7 @@ class Challenge implements EventSubscriberInterface {
       return count($_GET) == 0;
     }
 
-    // TODO - turn protected routes into config
+    // @todo turn protected routes into config
     $route_name = $request->attributes->get('_route');
     return in_array($route_name, [
       "flysystem.files",
@@ -106,15 +105,15 @@ class Challenge implements EventSubscriberInterface {
   public function protect(RequestEvent $event) {
     $request = $event->getRequest();
     if (!$this->applies($request)) {
-       return;
+      return;
     }
 
     $challenge_url = Url::fromRoute('turnstile_protect.challenge', [], [
       'query' => [
-        'destination' => $request->getRequestUri()
+        'destination' => $request->getRequestUri(),
       ],
     ])->toString();
-    $response = new RedirectResponse($challenge_url);    
+    $response = new RedirectResponse($challenge_url);
     $event->setResponse($response);
   }
 

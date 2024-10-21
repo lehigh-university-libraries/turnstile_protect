@@ -30,7 +30,7 @@ flowchart TD
 
 ## REQUIREMENTS
 
--
+- Turnstile
 - Captcha
 
 ## INSTALLATION

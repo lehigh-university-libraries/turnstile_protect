@@ -6,6 +6,9 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
+/**
+ * Present Turnstile captcha.
+ */
 class Challenge extends FormBase {
 
   /**
@@ -29,8 +32,8 @@ class Challenge extends FormBase {
       '#type' => 'submit',
       '#value' => $this->t('Submit'),
       '#attributes' => [
-        'class' => ['d-none']
-      ]
+        'class' => ['d-none'],
+      ],
     ];
 
     return $form;
@@ -41,7 +44,7 @@ class Challenge extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // 10d expiration
-    // TODO - add as config
+    // @todo add as config
     setcookie('turnstile_protect_pass', 1, 864000);
 
     $destination = \Drupal::request()->query->get('destination');
@@ -50,4 +53,5 @@ class Challenge extends FormBase {
     }
     $form_state->setRedirectUrl(Url::fromUserInput($destination));
   }
+
 }
