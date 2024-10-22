@@ -2,6 +2,7 @@
 
 namespace Drupal\turnstile_protect\EventSubscriber;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -16,6 +17,13 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class Challenge implements EventSubscriberInterface {
 
   /**
+   * The config factory service.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
@@ -28,7 +36,8 @@ class Challenge implements EventSubscriberInterface {
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user.
    */
-  public function __construct(AccountProxyInterface $current_user) {
+  public function __construct(ConfigFactoryInterface $config_factory, AccountProxyInterface $current_user) {
+    $this->configFactory = $config_factory;
     $this->currentUser = $current_user;
   }
 
@@ -50,13 +59,10 @@ class Challenge implements EventSubscriberInterface {
       return FALSE;
     }
 
+    $config = $this->configFactory->get('turnstile_protect.settings');
+
     $route_name = $request->attributes->get('_route');
-    if (!in_array($route_name, [
-      "flysystem.files",
-      "flysystem.serve",
-      "view.browse.main",
-      "view.advanced_search.page_1",
-    ])) {
+    if (!in_array($route_name, $config->get('routes'))) {
       return FALSE;
     }
 
@@ -71,8 +77,9 @@ class Challenge implements EventSubscriberInterface {
       return FALSE;
     }
 
-    // @todo allow specifying bots
+    // see if the client IP resolves to a good bot
     $hostname = gethostbyaddr($clientIp);
+    // being sure to lookup the domain to avoid spoofing
     $resolved_ip = gethostbyname($hostname);
     if ($clientIp !== $resolved_ip) {
       return TRUE;
@@ -83,18 +90,12 @@ class Challenge implements EventSubscriberInterface {
     }
     $tld = array_pop($parts);
     $hostname = array_pop($parts) . '.' . $tld;
-    if (in_array($hostname, [
-      "duckduckgo.com",
-      "kagibot.org",
-      "googleusercontent.com", "google.com", "googlebot.com",
-      "linkedin.com",
-      "archive.org",
-      "facebook.com",
-      "instagram.com",
-      "twitter.com", "x.com",
-      "apple.com",
-    ])) {
-      return count($_GET) == 0;
+    $goodBots = explode("\n", $config->get('bots'));
+    array_walk($goodBots, function (&$line) {
+      $line = trim($line);
+    });
+    if (in_array($hostname, $goodBots)) {
+      return $config->get('protect_parameters') ? count($_GET) > 0 : FALSE;
     }
 
     return TRUE;

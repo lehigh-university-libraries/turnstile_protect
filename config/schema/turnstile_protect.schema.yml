@@ -1,0 +1,17 @@
+# Schema for the configuration files of the turnstile_protect module.
+
+turnstile_protect.settings:
+  type: config_object
+  label: 'Turnstile Protect settings'
+  mapping:
+    routes:
+      sequence:
+        type: string
+      label: 'Routes'
+    bots:
+      sequence:
+        type: string
+      label: 'List of good bot domains'
+    protect_parameters:
+      type: boolean
+      label: 'Always challenge protected routes with URL parameters set'
