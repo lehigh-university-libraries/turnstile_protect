@@ -90,11 +90,7 @@ class Challenge implements EventSubscriberInterface {
     }
     $tld = array_pop($parts);
     $hostname = array_pop($parts) . '.' . $tld;
-    $goodBots = explode("\n", $config->get('bots'));
-    array_walk($goodBots, function (&$line) {
-      $line = trim($line);
-    });
-    if (in_array($hostname, $goodBots)) {
+    if (in_array($hostname, $config->get('bots'))) {
       return $config->get('protect_parameters') ? count($_GET) > 0 : FALSE;
     }
 

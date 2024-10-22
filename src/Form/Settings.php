@@ -111,12 +111,16 @@ class Settings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $routes = $form_state->getValue('routes');
+    $goodBots = explode("\n", $form_state->getValue('bots'));
+    array_walk($goodBots, function (&$line) {
+      $line = trim($line);
+    });
 
     $config = $this->config('turnstile_protect.settings');
     $config
       ->set('routes', array_keys($routes))
       ->set('protect_parameters', (bool) $form_state->getValue('protect_parameters'))
-      ->set('bots', $form_state->getValue('bots'))
+      ->set('bots', $goodBots)
       ->save();
 
     parent::submitForm($form, $form_state);
