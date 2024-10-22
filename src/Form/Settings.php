@@ -70,7 +70,7 @@ class Settings extends ConfigFormBase {
         Authenticated users and trusted networks set in <a href=\":url\">the CAPTCHA module's IP settings</a> will not be challenged.
         <br><br>
         This may negatively effort your SEO score, so you can configure which bots will not be challenged below.",
-        [':url' => '/admin/config/people/captcha'])
+        [':url' => '/admin/config/people/captcha']),
     ];
 
     $form['routes'] = [

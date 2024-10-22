@@ -23,8 +23,8 @@ class Challenge extends FormBase {
   /**
    * Constructs a new TurnstileForm.
    *
-   * @param \Drupal\Core\Session\SessionManagerInterface $session_manager
-   *   The session manager service.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack service.
    */
   public function __construct(RequestStack $request_stack) {
     $this->requestStack = $request_stack;

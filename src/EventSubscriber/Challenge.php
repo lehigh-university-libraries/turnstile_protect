@@ -33,6 +33,8 @@ class Challenge implements EventSubscriberInterface {
   /**
    * Constructs the event subscriber.
    *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory service.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user.
    */
@@ -77,9 +79,9 @@ class Challenge implements EventSubscriberInterface {
       return FALSE;
     }
 
-    // see if the client IP resolves to a good bot
+    // See if the client IP resolves to a good bot.
     $hostname = gethostbyaddr($clientIp);
-    // being sure to lookup the domain to avoid spoofing
+    // Being sure to lookup the domain to avoid spoofing.
     $resolved_ip = gethostbyname($hostname);
     if ($clientIp !== $resolved_ip) {
       return TRUE;
