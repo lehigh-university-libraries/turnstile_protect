@@ -13,6 +13,10 @@ function turnstile_protect_captcha_alter(&$captcha, $info) {
     return;
   }
 
+  if (\Drupal::routeMatch()->getRouteName() !== 'turnstile_protect.challenge') {
+    return;
+  }
+
   // Add a javascript callback after the turnstile succeeds.
   $captcha['form']['turnstile_widget']['#markup'] = str_replace('<div', '<div data-callback="turnstileProtectAutoSubmit"', $captcha['form']['turnstile_widget']['#markup']);
   $captcha['form']['#attached']['library'][] = 'turnstile_protect/challenge';
