@@ -9,6 +9,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
@@ -108,6 +109,23 @@ class Challenge implements EventSubscriberInterface {
   public function protect(RequestEvent $event) {
     $request = $event->getRequest();
     if (!$this->applies($request)) {
+      return;
+    }
+
+    // only allow five attempts at passing a challenge
+    $session = $request->getSession();
+    $submission_count = $session->get('turnstile_protect_submission_count', 0);
+    $submission_count++;
+    $session->set('turnstile_protect_submission_count', $submission_count);
+    if ($submission_count > 5) {
+      $response = new Response('Too many requests', 429);
+      $event->setResponse($response);
+      if (($submission_count % 10) == 0) {
+        \Drupal::logger('turnstile_protect')->notice('@failures attempts by @ip', [
+          '@failures' => $submission_count,
+          '@ip' => $request->getClientIp(),
+        ]);
+      }
       return;
     }
 
