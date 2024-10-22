@@ -2,6 +2,7 @@
 
 namespace Drupal\turnstile_protect\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -21,13 +22,23 @@ class Challenge extends FormBase {
   protected $requestStack;
 
   /**
+   * The config factory service.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * Constructs a new TurnstileForm.
    *
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory service.
    */
-  public function __construct(RequestStack $request_stack) {
+  public function __construct(RequestStack $request_stack, ConfigFactoryInterface $config_factory) {
     $this->requestStack = $request_stack;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -35,7 +46,8 @@ class Challenge extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('request_stack')
+      $container->get('request_stack'),
+      $container->get('config.factory')
     );
   }
 
@@ -50,11 +62,16 @@ class Challenge extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $config = $this->configFactory->get('captcha.settings');
 
-    $form['turnstile'] = [
-      '#type' => 'captcha',
-      '#captcha_type' => 'turnstile/Turnstile',
-    ];
+    // if captcha's globally adding turnstile to all forms
+    // no need to add it here
+    if (!$config->get('enable_globally')) {
+      $form['turnstile'] = [
+        '#type' => 'captcha',
+        '#captcha_type' => 'turnstile/Turnstile',
+      ];
+    }
 
     $form['submit'] = [
       '#type' => 'submit',
