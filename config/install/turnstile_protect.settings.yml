@@ -1,3 +1,18 @@
 routes: []
-bots: []
+bots: [
+  "duckduckgo.com",
+  "kagibot.org",
+  "googleusercontent.com",
+  "google.com",
+  "googlebot.com",
+  "msn.com",
+  "openalex.org",
+  "archive.org",
+  "linkedin.com",
+  "facebook.com",
+  "instagram.com",
+  "twitter.com",
+  "x.com",
+  "apple.com"
+]
 protect_parameters: false

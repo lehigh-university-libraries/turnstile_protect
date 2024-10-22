@@ -87,25 +87,12 @@ class Settings extends ConfigFormBase {
     ];
     $form['#attached']['library'][] = 'turnstile_protect/chosen';
 
-    $goodBots = [
-      "duckduckgo.com",
-      "kagibot.org",
-      "googleusercontent.com", "google.com", "googlebot.com",
-      "msn.com",
-      "openalex.org",
-      "archive.org",
-      "linkedin.com",
-      "facebook.com",
-      "instagram.com",
-      "twitter.com", "x.com",
-      "apple.com",
-    ];
     $form['bots'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Parent domain(s) of bots to not challenge*'),
       '#description' => $this->t('If a client IP reaches your site that resolves to a given domain, you can let them through the captcha. One bot per line, only the parent domain.
         <br>* The bot will be denied if routes with URL parameters are also protected (setting below)'),
-      '#default_value' => $config->get('bots') ?? implode("\n", $goodBots),
+      '#default_value' => implode("\n", $config->get('bots')),
       '#rows' => 20,
     ];
 
