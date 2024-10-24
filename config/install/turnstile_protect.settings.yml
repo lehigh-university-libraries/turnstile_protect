@@ -16,3 +16,6 @@ bots: [
   "apple.com"
 ]
 protect_parameters: false
+rate_limit: true
+window: 60
+threshold: 20

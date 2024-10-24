@@ -17,12 +17,14 @@ flowchart TD
     Authenticated -- No --> IP_BYPASS{Is client IP whitelisted by captcha module?}
     IP_BYPASS -- Yes --> Continue(Go to original destination)
     IP_BYPASS -- No --> GOOD_BOT{Is client IP hostname in allowed bot list?}
-    GOOD_BOT -- No --> PROTECTED_ROUTE(Is this route protected by Turnstile?)
+    GOOD_BOT -- No --> PROTECTED_ROUTE{Is this route protected by Turnstile?}
     GOOD_BOT -- Yes --> CANONICAL_URL_BOT{Are there URL parameters?}
-    CANONICAL_URL_BOT -- Yes --> PROTECTED_ROUTE(Is this route protected by Turnstile?)
+    CANONICAL_URL_BOT -- Yes --> PROTECTED_ROUTE{Is this route protected by Turnstile?}
     CANONICAL_URL_BOT -- No --> Continue(Go to original destination)
-    PROTECTED_ROUTE -- Yes --> REDIRECT(Redirect to /challenge)
+    PROTECTED_ROUTE -- Yes --> RATE_LIMIT{Is this IP in a range seeing increased traffic?}
     PROTECTED_ROUTE -- No --> Continue(Go to original destination)
+    RATE_LIMIT -- Yes --> REDIRECT(Redirect to /challenge)
+    RATE_LIMIT -- No --> Continue(Go to original destination)
     REDIRECT --> CHALLENGE{Cloudflare turnstile challenge}
     CHALLENGE -- Pass --> Continue(Go to original destination)
     CHALLENGE -- Fail --> Stuck

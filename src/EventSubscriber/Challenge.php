@@ -3,6 +3,8 @@
 namespace Drupal\turnstile_protect\EventSubscriber;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Flood\FloodInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -32,6 +34,18 @@ class Challenge implements EventSubscriberInterface {
   protected $currentUser;
 
   /**
+   * @var \Drupal\Core\Flood\FloodInterface
+   */
+  protected $flood;
+
+  /**
+   * The logger channel.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
    * Constructs the event subscriber.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -39,7 +53,9 @@ class Challenge implements EventSubscriberInterface {
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, AccountProxyInterface $current_user) {
+  public function __construct(LoggerChannelFactoryInterface $logger_factory, FloodInterface $flood, ConfigFactoryInterface $config_factory, AccountProxyInterface $current_user) {
+    $this->logger = $logger_factory->get('turnstile_protect');
+    $this->flood = $flood;
     $this->configFactory = $config_factory;
     $this->currentUser = $current_user;
   }
@@ -97,7 +113,40 @@ class Challenge implements EventSubscriberInterface {
       return $config->get('protect_parameters') ? count($_GET) > 0 : FALSE;
     }
 
-    return TRUE;
+    // don't check the rate limit if it's not set
+    if (!$config->get("rate_limit")) {
+      return TRUE;
+    }
+
+    // check if we're rate limited
+    $threshold = $config->get("threshold");
+    $window = $config->get("window");
+
+    // base the rate limit identifier on /16 for ipv4
+    // and /64 for ipv6
+    $delimiter = strpos($clientIp, ":") ? ":" : ".";
+    $components = explode($delimiter, $clientIp);
+    // ipv6
+    if ($delimiter == ':') {
+      $components = self::expandIPv6($clientIp);
+      $components = array_slice($components, 0, 4);
+    }
+    else {
+      $components = array_slice($components, 0, 2);
+    }
+    $identifier = implode($delimiter, $components);
+    $event_name = 'turnstile_protect_rate_limit';
+    $allowed = $this->flood->isAllowed(
+      $event_name,
+      $threshold,
+      $window,
+      $identifier
+    );
+    $this->flood->register($event_name, $window, $identifier);
+
+    // if we haven't been flooded by this ip range
+    // do not present a challenge
+    return !$allowed;
   }
 
   /**
@@ -120,8 +169,9 @@ class Challenge implements EventSubscriberInterface {
     if ($submission_count > 5) {
       $response = new Response('Too many requests', 429);
       $event->setResponse($response);
+      // log every ten failures
       if (($submission_count % 10) == 0) {
-        \Drupal::logger('turnstile_protect')->notice('@failures attempts by @ip', [
+        $this->logger->notice('@failures attempts by @ip', [
           '@failures' => $submission_count,
           '@ip' => $request->getClientIp(),
         ]);
@@ -136,6 +186,33 @@ class Challenge implements EventSubscriberInterface {
     ])->toString();
     $response = new RedirectResponse($challenge_url);
     $event->setResponse($response);
+  }
+
+  /**
+   * Helper function to normalize ipv6 addresses.
+   *
+   * @param string $ip
+   *   The ipv6 address to expand.
+   */
+  public static function expandIPv6($ip) {
+    $hextets = explode(':', $ip);
+    $expanded = [];
+
+    // Find the index of an empty hextet (indicating :: compression)
+    $emptyIndex = array_search('', $hextets, true);
+    if ($emptyIndex !== FALSE) {
+        // Calculate how many hextets are missing
+        $missingCount = 8 - count($hextets) + 1;
+        // Fill in zeros for the missing hextets
+        array_splice($hextets, $emptyIndex, 1, array_fill(0, $missingCount, '0'));
+    }
+
+    // Pad each hextet to 4 digits
+    foreach ($hextets as $hextet) {
+        $expanded[] = str_pad($hextet, 4, '0', STR_PAD_LEFT);
+    }
+
+    return $expanded;
   }
 
 }

@@ -103,6 +103,25 @@ class Settings extends ConfigFormBase {
       '#default_value' => $config->get('protect_parameters'),
     ];
 
+    $form['rate_limit'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Only challenge for ranges seeing increased traffic'),
+      '#description' => $this->t('Clients IPs will be tracked by range (e.g. 8.8.0.0-8.8.255.255) and only challenged if that range is seeing increased traffic.'),
+      '#default_value' => $config->get('rate_limit'),
+    ];
+
+    $form['threshold'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('How many requests within a time window before blocking traffic within an IP range'),
+      '#default_value' => $config->get('threshold'),
+    ];
+
+    $form['window'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Number of seconds in the time window to allow "threshold" number of events'),
+      '#default_value' => $config->get('window'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -121,6 +140,10 @@ class Settings extends ConfigFormBase {
       ->set('routes', array_keys($routes))
       ->set('protect_parameters', (bool) $form_state->getValue('protect_parameters'))
       ->set('bots', $goodBots)
+      ->set('rate_limit', (bool) $form_state->getValue('rate_limit'))
+      ->set('threshold', (int) $form_state->getValue('threshold'))
+      ->set('window', (int) $form_state->getValue('window'))
+
       ->save();
 
     parent::submitForm($form, $form_state);

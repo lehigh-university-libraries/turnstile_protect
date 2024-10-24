@@ -15,3 +15,12 @@ turnstile_protect.settings:
     protect_parameters:
       type: boolean
       label: 'Always challenge protected routes with URL parameters set'
+    rate_limit:
+      type: boolean
+      label: 'Only present challenge if an IP range is seeing increased traffic'
+    threshold:
+      type: integer
+      label: 'How many requests within a time window before blocking traffic within an IP range'
+    window:
+      type: integer
+      label: 'Number of seconds in the time window to allow "threshold" number of events'
