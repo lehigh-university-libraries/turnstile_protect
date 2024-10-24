@@ -111,13 +111,13 @@ class Settings extends ConfigFormBase {
     ];
 
     $form['threshold'] = [
-      '#type' => 'checkbox',
+      '#type' => 'number',
       '#title' => $this->t('How many requests within a time window before blocking traffic within an IP range'),
       '#default_value' => $config->get('threshold'),
     ];
 
     $form['window'] = [
-      '#type' => 'checkbox',
+      '#type' => 'number',
       '#title' => $this->t('Number of seconds in the time window to allow "threshold" number of events'),
       '#default_value' => $config->get('window'),
     ];
