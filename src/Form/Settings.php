@@ -105,20 +105,20 @@ class Settings extends ConfigFormBase {
 
     $form['rate_limit'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Only challenge for ranges seeing increased traffic'),
+      '#title' => $this->t('Rate limit: Only challenge for ranges seeing increased traffic'),
       '#description' => $this->t('Clients IPs will be tracked by range (e.g. 8.8.0.0-8.8.255.255) and only challenged if that range is seeing increased traffic.'),
       '#default_value' => $config->get('rate_limit'),
     ];
 
     $form['threshold'] = [
       '#type' => 'number',
-      '#title' => $this->t('How many requests within a time window before blocking traffic within an IP range'),
+      '#title' => $this->t('Rate limit: How many requests within a time window before blocking traffic within an IP range'),
       '#default_value' => $config->get('threshold'),
     ];
 
     $form['window'] = [
       '#type' => 'number',
-      '#title' => $this->t('Number of seconds in the time window to allow "threshold" number of events'),
+      '#title' => $this->t('Rate limit: Number of seconds in the time window to allow "threshold" number of events'),
       '#default_value' => $config->get('window'),
     ];
 
