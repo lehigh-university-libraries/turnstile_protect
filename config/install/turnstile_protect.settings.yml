@@ -17,5 +17,5 @@ bots: [
 ]
 protect_parameters: false
 rate_limit: true
-window: 60
+window: 86400
 threshold: 20
