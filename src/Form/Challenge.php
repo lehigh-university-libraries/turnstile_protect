@@ -64,8 +64,8 @@ class Challenge extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->configFactory->get('captcha.settings');
 
-    // if captcha's globally adding turnstile to all forms
-    // no need to add it here
+    // If captcha's globally adding turnstile to all forms
+    // no need to add it here.
     if (!$config->get('enable_globally')) {
       $form['turnstile'] = [
         '#type' => 'captcha',
