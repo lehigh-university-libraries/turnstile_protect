@@ -64,8 +64,8 @@ class Challenge extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->configFactory->get('captcha.settings');
 
-    // if captcha's globally adding turnstile to all forms
-    // no need to add it here
+    // If captcha's globally adding turnstile to all forms
+    // no need to add it here.
     if (!$config->get('enable_globally')) {
       $form['turnstile'] = [
         '#type' => 'captcha',
@@ -88,10 +88,11 @@ class Challenge extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $session = $this->requestStack->getCurrentRequest()->getSession();
+    $request = $this->requestStack->getCurrentRequest();
+    $session = $request->getSession();
     $session->set('turnstile_protect_pass', TRUE);
 
-    $destination = \Drupal::request()->query->get('destination');
+    $destination = $request->query->get('destination');
     if (!$destination) {
       $destination = '/';
     }

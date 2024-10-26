@@ -10,8 +10,8 @@ use Drupal\Core\Url;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
@@ -34,6 +34,8 @@ class Challenge implements EventSubscriberInterface {
   protected $currentUser;
 
   /**
+   * The flood service.
+   *
    * @var \Drupal\Core\Flood\FloodInterface
    */
   protected $flood;
@@ -48,6 +50,10 @@ class Challenge implements EventSubscriberInterface {
   /**
    * Constructs the event subscriber.
    *
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The watchdog service.
+   * @param \Drupal\Core\Flood\FloodInterface $flood
+   *   The flood service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
@@ -110,25 +116,25 @@ class Challenge implements EventSubscriberInterface {
     $tld = array_pop($parts);
     $hostname = array_pop($parts) . '.' . $tld;
     if (in_array($hostname, $config->get('bots'))) {
-      return $config->get('protect_parameters') ? count($_GET) > 0 : FALSE;
+      return $config->get('protect_parameters') ? count($request->query->all()) > 0 : FALSE;
     }
 
-    // don't check the rate limit if it's not set
+    // don't check the rate limit if it's not set.
     if (!$config->get("rate_limit")) {
       return TRUE;
     }
 
-    // check if we're rate limited
+    // Check if we're rate limited.
     $threshold = $config->get("threshold");
     $window = $config->get("window");
 
-    // base the rate limit identifier on /16 for ipv4
-    // and /64 for ipv6
+    // Base the rate limit identifier on /16 for ipv4
+    // and /64 for ipv6.
     $delimiter = strpos($clientIp, ":") ? ":" : ".";
     $components = explode($delimiter, $clientIp);
-    // ipv6
+    // ipv6.
     if ($delimiter == ':') {
-      $components = self::expandIPv6($clientIp);
+      $components = self::expandIpv6($clientIp);
       $components = array_slice($components, 0, 4);
     }
     else {
@@ -144,8 +150,8 @@ class Challenge implements EventSubscriberInterface {
     );
     $this->flood->register($event_name, $window, $identifier);
 
-    // if we haven't been flooded by this ip range
-    // do not present a challenge
+    // If we haven't been flooded by this ip range
+    // do not present a challenge.
     return !$allowed;
   }
 
@@ -161,7 +167,7 @@ class Challenge implements EventSubscriberInterface {
       return;
     }
 
-    // only allow five attempts at passing a challenge
+    // Only allow five attempts at passing a challenge.
     $session = $request->getSession();
     $submission_count = $session->get('turnstile_protect_submission_count', 0);
     $submission_count++;
@@ -169,7 +175,7 @@ class Challenge implements EventSubscriberInterface {
     if ($submission_count > 5) {
       $response = new Response('Too many requests', 429);
       $event->setResponse($response);
-      // log every ten failures
+      // Log every ten failures.
       if (($submission_count % 10) == 0) {
         $this->logger->notice('@failures attempts by @ip', [
           '@failures' => $submission_count,
@@ -194,22 +200,22 @@ class Challenge implements EventSubscriberInterface {
    * @param string $ip
    *   The ipv6 address to expand.
    */
-  public static function expandIPv6($ip) {
+  public static function expandIpv6($ip) {
     $hextets = explode(':', $ip);
     $expanded = [];
 
     // Find the index of an empty hextet (indicating :: compression)
-    $emptyIndex = array_search('', $hextets, true);
+    $emptyIndex = array_search('', $hextets, TRUE);
     if ($emptyIndex !== FALSE) {
-        // Calculate how many hextets are missing
-        $missingCount = 8 - count($hextets) + 1;
-        // Fill in zeros for the missing hextets
-        array_splice($hextets, $emptyIndex, 1, array_fill(0, $missingCount, '0'));
+      // Calculate how many hextets are missing.
+      $missingCount = 8 - count($hextets) + 1;
+      // Fill in zeros for the missing hextets.
+      array_splice($hextets, $emptyIndex, 1, array_fill(0, $missingCount, '0'));
     }
 
-    // Pad each hextet to 4 digits
+    // Pad each hextet to 4 digits.
     foreach ($hextets as $hextet) {
-        $expanded[] = str_pad($hextet, 4, '0', STR_PAD_LEFT);
+      $expanded[] = str_pad($hextet, 4, '0', STR_PAD_LEFT);
     }
 
     return $expanded;
