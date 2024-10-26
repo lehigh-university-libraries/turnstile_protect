@@ -116,7 +116,7 @@ class Challenge implements EventSubscriberInterface {
     $tld = array_pop($parts);
     $hostname = array_pop($parts) . '.' . $tld;
     if (in_array($hostname, $config->get('bots'))) {
-      return $config->get('protect_parameters') ? count($_GET) > 0 : FALSE;
+      return $config->get('protect_parameters') ? count($request->query->all()) > 0 : FALSE;
     }
 
     // don't check the rate limit if it's not set.
