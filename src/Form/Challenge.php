@@ -88,10 +88,11 @@ class Challenge extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $session = $this->requestStack->getCurrentRequest()->getSession();
+    $request = $this->requestStack->getCurrentRequest();
+    $session = $request->getSession();
     $session->set('turnstile_protect_pass', TRUE);
 
-    $destination = \Drupal::request()->query->get('destination');
+    $destination = $request->query->get('destination');
     if (!$destination) {
       $destination = '/';
     }
