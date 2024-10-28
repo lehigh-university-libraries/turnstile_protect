@@ -69,7 +69,7 @@ class Challenge implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events[KernelEvents::REQUEST] = ['protect'];
 
     return $events;
