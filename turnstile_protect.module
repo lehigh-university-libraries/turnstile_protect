@@ -32,7 +32,7 @@ function turnstile_protect_cron() {
   }
 
   $threshold_timestamp = \Drupal::time()->getRequestTime() - $config->get('window');
-  // add some padding to prevent missing a whole day of metrics
+  // Add some padding to prevent missing a whole day of metrics.
   $threshold_timestamp -= 300;
   $result = \Drupal::database()->query("SELECT MAX(timestamp) FROM {turnstile_protect_history}")->fetchField();
   if ($result && $result > $threshold_timestamp) {
