@@ -20,3 +20,4 @@ rate_limit: true
 window: 86400
 threshold: 20
 max_challenges: 5
+history_enabled: false

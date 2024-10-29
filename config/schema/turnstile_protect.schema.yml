@@ -27,3 +27,6 @@ turnstile_protect.settings:
     max_challenges:
       type: integer
       label: 'The maximum times the client can be challenged in a session before sending 429 responses'
+    history_enabled:
+      type: boolean
+      label: 'Save a daily snapshot of the flood information on your site'

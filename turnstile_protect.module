@@ -21,3 +21,30 @@ function turnstile_protect_captcha_alter(&$captcha, $info) {
   $captcha['form']['turnstile_widget']['#markup'] = str_replace('<div', '<div data-callback="turnstileProtectAutoSubmit"', $captcha['form']['turnstile_widget']['#markup']);
   $captcha['form']['#attached']['library'][] = 'turnstile_protect/challenge';
 }
+
+/**
+ * Implements hook_cron().
+ */
+function turnstile_protect_cron() {
+  $config = \Drupal::config('turnstile_protect.settings');
+  if (!$config->get('history_enabled')) {
+    return;
+  }
+
+  $threshold_timestamp = \Drupal::time()->getRequestTime() - $config->get('window');
+  // add some padding to prevent missing a whole day of metrics
+  $threshold_timestamp -= 300;
+  $result = \Drupal::database()->query("SELECT MAX(timestamp) FROM {turnstile_protect_history}")->fetchField();
+  if ($result && $result > $threshold_timestamp) {
+    return;
+  }
+
+  \Drupal::database()->query("INSERT INTO {turnstile_protect_history} (`timestamp`, ip_range, requests)
+    SELECT UNIX_TIMESTAMP(), identifier, COUNT(*)
+    FROM {flood}
+    WHERE `event` = :event
+    GROUP BY identifier
+    ORDER BY COUNT(*) DESC", [
+      ':event' => 'turnstile_protect_rate_limit',
+    ]);
+}

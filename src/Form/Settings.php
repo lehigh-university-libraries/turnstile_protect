@@ -130,6 +130,13 @@ class Settings extends ConfigFormBase {
       '#min' => 1,
     ];
 
+    $form['history_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable History'),
+      '#description' => $this->t('Enable or disable history tracking in Turnstile Protect.'),
+      '#default_value' => $config->get('history_enabled'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -152,6 +159,7 @@ class Settings extends ConfigFormBase {
       ->set('threshold', (int) $form_state->getValue('threshold'))
       ->set('window', (int) $form_state->getValue('window'))
       ->set('max_challenges', (int) $form_state->getValue('max_challenges'))
+      ->set('history_enabled', (bool) $form_state->getValue('history_enabled'))
       ->save();
 
     parent::submitForm($form, $form_state);
