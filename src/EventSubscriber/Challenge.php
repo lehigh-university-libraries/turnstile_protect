@@ -3,6 +3,7 @@
 namespace Drupal\turnstile_protect\EventSubscriber;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -78,14 +79,12 @@ class Challenge implements EventSubscriberInterface {
   /**
    * Helper function to see if the given response needs handled by this logic.
    */
-  protected function applies(RequestEvent $event): bool {
+  protected function applies(RequestEvent $event, ImmutableConfig $config): bool {
     $request = $event->getRequest();
     $session = $request->getSession();
     if ($session->get('turnstile_protect_pass')) {
       return FALSE;
     }
-
-    $config = $this->configFactory->get('turnstile_protect.settings');
 
     $route_name = $request->attributes->get('_route');
     if (!in_array($route_name, $config->get('routes'))) {
@@ -170,18 +169,20 @@ class Challenge implements EventSubscriberInterface {
    *   The request event.
    */
   public function protect(RequestEvent $event) {
-    if (!$this->applies($event)) {
+    $config = $this->configFactory->get('turnstile_protect.settings');
+    if (!$this->applies($event, $config)) {
       return;
     }
 
     $request = $event->getRequest();
 
-    // Only allow five attempts at passing a challenge.
+    // Only allow "max_challenges" attempts at passing a challenge.
     $session = $request->getSession();
     $submission_count = $session->get('turnstile_protect_submission_count', 0);
     $submission_count++;
     $session->set('turnstile_protect_submission_count', $submission_count);
-    if ($submission_count > 5) {
+    $max = $config->get('max_challenges') ?? 5;
+    if ($submission_count > $max) {
       $response = new Response('Too many requests', 429);
       $event->setResponse($response);
       // Log every ten failures.

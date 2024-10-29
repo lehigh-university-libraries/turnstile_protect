@@ -122,6 +122,14 @@ class Settings extends ConfigFormBase {
       '#default_value' => $config->get('window'),
     ];
 
+    $form['max_challenges'] = [
+      '#type' => 'number',
+      '#title' => 'Max challenges',
+      '#description' => $this->t('The maximum times the client can be challenged in a session before sending 429 responses'),
+      '#default_value' => $config->get('max_challenges'),
+      '#min' => 1,
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -143,7 +151,7 @@ class Settings extends ConfigFormBase {
       ->set('rate_limit', (bool) $form_state->getValue('rate_limit'))
       ->set('threshold', (int) $form_state->getValue('threshold'))
       ->set('window', (int) $form_state->getValue('window'))
-
+      ->set('max_challenges', (int) $form_state->getValue('max_challenges'))
       ->save();
 
     parent::submitForm($form, $form_state);

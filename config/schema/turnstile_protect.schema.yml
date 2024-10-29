@@ -24,3 +24,6 @@ turnstile_protect.settings:
     window:
       type: integer
       label: 'Number of seconds in the time window to allow "threshold" number of events'
+    max_challenges:
+      type: integer
+      label: 'The maximum times the client can be challenged in a session before sending 429 responses'
