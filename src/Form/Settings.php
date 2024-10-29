@@ -99,7 +99,7 @@ class Settings extends ConfigFormBase {
     $form['protect_parameters'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Always protect routes with URL parameters key'),
-      '#description' => $this->t('Challenge any client, even good bots, if the protected route(s) have even one URL parameter (e.g. example.com?foo=bar). This is to avoid having good bots do things like crawl facets on your search index.'),
+      '#description' => $this->t('Return a 403/Forbidden when good bots hit protected route(s) with one or more URL parameters (e.g. example.com?foo=bar). This is to avoid having good bots do things like crawl facets on your search index.'),
       '#default_value' => $config->get('protect_parameters'),
     ];
 

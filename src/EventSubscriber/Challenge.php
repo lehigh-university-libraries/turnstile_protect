@@ -78,7 +78,8 @@ class Challenge implements EventSubscriberInterface {
   /**
    * Helper function to see if the given response needs handled by this logic.
    */
-  protected function applies(Request $request): bool {
+  protected function applies(RequestEvent $event): bool {
+    $request = $event->getRequest();
     $session = $request->getSession();
     if ($session->get('turnstile_protect_pass')) {
       return FALSE;
@@ -116,7 +117,14 @@ class Challenge implements EventSubscriberInterface {
     $tld = array_pop($parts);
     $hostname = array_pop($parts) . '.' . $tld;
     if (in_array($hostname, $config->get('bots'))) {
-      return $config->get('protect_parameters') ? count($request->query->all()) > 0 : FALSE;
+      // Do not allow good bots to crawl URLs with parameters
+      // if the config is set accordingly.
+      if ($config->get('protect_parameters') && count($request->query->all()) > 0) {
+        $response = new Response('Forbidden', 403);
+        $event->setResponse($response);
+      }
+
+      return FALSE;
     }
 
     // don't check the rate limit if it's not set.
@@ -162,10 +170,11 @@ class Challenge implements EventSubscriberInterface {
    *   The request event.
    */
   public function protect(RequestEvent $event) {
-    $request = $event->getRequest();
-    if (!$this->applies($request)) {
+    if (!$this->applies($event)) {
       return;
     }
+
+    $request = $event->getRequest();
 
     // Only allow five attempts at passing a challenge.
     $session = $request->getSession();
