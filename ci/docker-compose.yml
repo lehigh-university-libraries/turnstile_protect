@@ -1,9 +1,0 @@
-networks:
-  default:
-services:
-  drupal:
-    image: lehighlts/drupal-ci:${DRUPAL_VERSION}-php${PHP_VERSION}
-    volumes:
-      - ../:/var/www/drupal/web/modules/contrib/turnstile_protect
-    environment:
-      ENABLE_MODULES: turnstile_protect
