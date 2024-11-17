@@ -1,0 +1,30 @@
+name: lint-test
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  lint-test:
+    name: lint+test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ["8.1", "8.2", "8.3"]
+        drupal-version: ["10.2", "10.3", "10.4", "11.0"]
+        exclude:
+          - drupal-version: "11.0"
+            php-version: "8.1"
+          - drupal-version: "11.0"
+            php-version: "8.2"
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: lint+test
+      working-directory: ci
+      run: docker compose up -d --quiet-pull
+      env:
+        PHP_VERSION: ${{ matrix.php-version }}
+        DRUPAL_VERSION: ${{ matrix.drupal-version }}
