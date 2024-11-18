@@ -27,4 +27,7 @@ jobs:
         docker run \
           --env ENABLE_MODULES=turnstile_protect \
           -v $(pwd):/var/www/drupal/web/modules/contrib/turnstile_protect \
-          lehighlts/drupal-ci:${{ matrix.drupal-version }}-php${{ matrix.php-version }}
+          lehighlts/drupal-ci:${DRUPAL_VERSION}-php${PHP_VERSION}
+      env:
+        DRUPAL_VERSION: ${{ matrix.drupal-version }}
+        PHP_VERSION: ${{ matrix.php-version }}
