@@ -23,11 +23,11 @@ jobs:
       uses: actions/checkout@v4
 
     - name: lint+test
+      working-directory: tests
       run: |
-        docker run \
-          --env ENABLE_MODULES=turnstile_protect \
-          -v $(pwd):/var/www/drupal/web/modules/contrib/turnstile_protect \
-          lehighlts/drupal-ci:${DRUPAL_VERSION}-php${PHP_VERSION}
+        export MODULE_DIRECTORY=$(pwd | xargs dirname)
+        docker compose up --quiet-pull --abort-on-container-exit
       env:
         DRUPAL_VERSION: ${{ matrix.drupal-version }}
         PHP_VERSION: ${{ matrix.php-version }}
+        ENABLE_MODULES: turnstile_protect

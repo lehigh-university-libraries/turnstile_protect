@@ -2,14 +2,14 @@
 
 namespace Drupal\Tests\turnstile_protect\Functional;
 
-use Drupal\Tests\BrowserTestBase;
+use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 
 /**
  * Tests redirection from /node/1 to /challenge.
  *
  * @group turnstile_protect
  */
-class RedirectTest extends BrowserTestBase {
+class RedirectTest extends WebDriverTestBase {
 
   /**
    * {@inheritdoc}
@@ -24,7 +24,7 @@ class RedirectTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'claro';
+  protected $defaultTheme = 'stark';
 
   /**
    * Sets up the test environment.
@@ -49,26 +49,37 @@ class RedirectTest extends BrowserTestBase {
       ->save();
 
     $this->assertEquals("entity.node.canonical", $config->get('routes')[0], 'Routes configuration is set to node.entity.canonical.');
-    \Drupal::service('cache.config')->deleteAll();
-
   }
 
   /**
    * Tests redirection from node to /challenge.
    */
   public function testNodeRedirect() {
+    // Create a node we'll try accessing.
     $node = $this->drupalCreateNode(['type' => 'page']);
     $nodeUrl = $node->toUrl()->toString();
-    $this->drupalGet($nodeUrl);
 
+    // Since turnstile_protect.settings["threshold"] = 1
+    // we should be able to view the node once.
+    $this->drupalGet($nodeUrl);
     $url = $this->getSession()->getCurrentUrl();
     $components = parse_url($url);
     $this->assertEquals($nodeUrl, $components['path'], 'User is not redirected to /challenge.');
 
+    // We should be challenged now on the second look.
     $this->drupalGet($nodeUrl);
     $url = $this->getSession()->getCurrentUrl();
     $components = parse_url($url);
-    $this->assertEquals('/challenge', $components['path'], 'User is redirected to /challenge.');
+    $this->assertEquals('/challenge', $components['path'], 'User is not redirected to /challenge.');
+
+    sleep(15);
+
+    // We should be redirected to the node after the turnstile passed
+    // which it always will in this test with the turnstile site/secret keys
+    // set to their always pass test.
+    $url = $this->getSession()->getCurrentUrl();
+    $components = parse_url($url);
+    $this->assertEquals($nodeUrl, $components['path'], 'User is redirected back to node.');
   }
 
 }
