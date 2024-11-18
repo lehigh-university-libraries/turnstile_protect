@@ -100,17 +100,20 @@ class Challenge implements EventSubscriberInterface {
     if (captcha_whitelist_ip_whitelisted($clientIp)) {
       return FALSE;
     }
-
     // See if the client IP resolves to a good bot.
     $hostname = gethostbyaddr($clientIp);
     // Being sure to lookup the domain to avoid spoofing.
     $resolved_ip = gethostbyname($hostname);
     if ($clientIp !== $resolved_ip) {
-      return TRUE;
+      if ($clientIp !== '127.0.0.1') {
+        return TRUE;
+      }
     }
     $parts = explode(".", $hostname);
     if (count($parts) < 2) {
-      return TRUE;
+      if ($clientIp !== '127.0.0.1') {
+        return TRUE;
+      }
     }
     $tld = array_pop($parts);
     $hostname = array_pop($parts) . '.' . $tld;

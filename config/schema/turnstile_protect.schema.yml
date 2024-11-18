@@ -5,10 +5,12 @@ turnstile_protect.settings:
   label: 'Turnstile Protect settings'
   mapping:
     routes:
+      type: sequence
       sequence:
         type: string
       label: 'Routes'
     bots:
+      type: sequence
       sequence:
         type: string
       label: 'List of good bot domains'
