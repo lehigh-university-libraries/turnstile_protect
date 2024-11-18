@@ -5,7 +5,7 @@ namespace Drupal\Tests\turnstile_protect\Kernel;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Tests basic functionality of the YourModule module.
+ * Tests basic functionality of the turnstile_protect module.
  *
  * @group turnstile_protect
  */
