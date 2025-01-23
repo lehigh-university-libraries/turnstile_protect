@@ -34,20 +34,27 @@ function turnstile_protect_cron() {
     return;
   }
 
-  $threshold_timestamp = \Drupal::time()->getRequestTime() - $config->get('window');
-  // Add some padding to prevent missing a whole day of metrics.
-  $threshold_timestamp -= 300;
+  $window = $config->get('window');
+  $current_time = \Drupal::time()->getRequestTime();
+  $threshold_timestamp = $current_time - $window;
+  // Add a 15m buffer.
+  $threshold_timestamp -= 900;
+
+  // Retrieve the last execution time.
   $result = \Drupal::database()->query("SELECT MAX(timestamp) FROM {turnstile_protect_history}")->fetchField();
-  if ($result && $result > $threshold_timestamp) {
+
+  // Run only if there's no recent execution.
+  if ($result && $result >= $threshold_timestamp) {
     return;
   }
 
   \Drupal::database()->query("INSERT INTO {turnstile_protect_history} (`timestamp`, ip_range, requests)
-    SELECT UNIX_TIMESTAMP(), identifier, COUNT(*)
+    SELECT :current_time, identifier, COUNT(*)
     FROM {flood}
     WHERE `event` = :event
     GROUP BY identifier
     ORDER BY COUNT(*) DESC", [
       ':event' => 'turnstile_protect_rate_limit',
+      ':current_time' => $current_time,
     ]);
 }
