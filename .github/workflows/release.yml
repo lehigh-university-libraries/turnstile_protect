@@ -2,7 +2,7 @@ name: Create release
 on:
   pull_request_target:
     branches:
-      - main
+      - 1.0.x
     types:
       - closed
 permissions:
