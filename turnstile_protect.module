@@ -6,6 +6,17 @@
  */
 
 /**
+ * Implements hook_library_info_alter().
+ */
+function turnstile_protect_library_info_alter(&$libraries, $extension) {
+  $config = \Drupal::config('turnstile.settings');
+  $turnstile_src = $config->get('turnstile_src');
+  if (isset($libraries['turnstile']['js'][$turnstile_src])) {
+    $libraries['turnstile']['js'][$turnstile_src]['attributes']['referrerpolicy'] = 'no-referrer';
+  }
+}
+
+/**
  * Implements hook_captcha_alter().
  */
 function turnstile_protect_captcha_alter(&$captcha, $info) {
@@ -18,7 +29,9 @@ function turnstile_protect_captcha_alter(&$captcha, $info) {
   }
 
   // Block referrer to cloudflare.
-  $captcha['form']['turnstile_widget']['#attached']['html_head'][0][0]['#attributes']['referrerpolicy'] = 'no-referrer';
+  if (!empty($captcha['form']['turnstile_widget']['#attached']['html_head'][0][0])) {
+    $captcha['form']['turnstile_widget']['#attached']['html_head'][0][0]['#attributes']['referrerpolicy'] = 'no-referrer';
+  }
 
   // Add a javascript callback after the turnstile succeeds.
   $captcha['form']['turnstile_widget']['#markup'] = str_replace('<div', '<div data-callback="turnstileProtectAutoSubmit"', $captcha['form']['turnstile_widget']['#markup']);
