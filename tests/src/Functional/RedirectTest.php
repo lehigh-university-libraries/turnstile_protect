@@ -35,8 +35,8 @@ class RedirectTest extends WebDriverTestBase {
     // Always pass the turnstile
     // https://developers.cloudflare.com/turnstile/troubleshooting/testing/
     $this->config('turnstile.settings')
-      ->set('site_key', '1x00000000000000000000AA')
-      ->set('secret_key', '1x0000000000000000000000000000000AA')
+      ->set('testing_site_key', '1x00000000000000000000AA')
+      ->set('testing_secret_key', '1x0000000000000000000000000000000AA')
       ->save();
 
     $config = $this->config('turnstile_protect.settings')
