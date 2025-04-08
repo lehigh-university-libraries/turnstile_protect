@@ -112,10 +112,13 @@ class Challenge implements EventSubscriberInterface {
       return FALSE;
     }
 
-    $hostname = self::getHostname($clientIp, $hostname);
-    // Need at least a second level domain.
-    if (strpos($hostname, ".") === FALSE) {
-      return TRUE;
+    $hostname = "localhost.localdomain";
+    if ($clientIp !== '127.0.0.1') {
+      $hostname = self::getHostname($clientIp, $hostname);
+      // Need at least a second level domain.
+      if (strpos($hostname, ".") === FALSE) {
+        return TRUE;
+      }
     }
 
     $parts = explode(".", $hostname);
