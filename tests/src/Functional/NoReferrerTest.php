@@ -41,7 +41,7 @@ class NoReferrerTest extends BrowserTestBase {
       ->set('key_type', 'authentication_multivalue')
       ->set('key_provider', 'config')
       ->set('key_provider_settings', [
-        'key_value' => '{"site_key": "1x00000000000000000000AA", "secret_key": "1x0000000000000000000000000000000AA"}'
+        'key_value' => '{"site_key": "1x00000000000000000000AA", "secret_key": "1x0000000000000000000000000000000AA"}',
       ])
       ->set('key_input', 'textarea_field')
       ->save();
