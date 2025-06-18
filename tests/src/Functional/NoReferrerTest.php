@@ -48,6 +48,7 @@ class NoReferrerTest extends BrowserTestBase {
 
     $this->config('turnstile.settings')
       ->set('keys', 'turnstile')
+      ->set('turnstile_src', 'https://challenges.cloudflare.com/turnstile/v0/api.js')
       ->save();
   }
 

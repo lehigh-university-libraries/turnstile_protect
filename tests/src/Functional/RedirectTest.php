@@ -48,6 +48,7 @@ class RedirectTest extends WebDriverTestBase {
 
     $this->config('turnstile.settings')
       ->set('keys', 'turnstile')
+      ->set('turnstile_src', 'https://challenges.cloudflare.com/turnstile/v0/api.js')
       ->save();
 
     $config = $this->config('turnstile_protect.settings')
