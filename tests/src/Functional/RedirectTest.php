@@ -19,6 +19,7 @@ class RedirectTest extends WebDriverTestBase {
     'captcha',
     'turnstile',
     'turnstile_protect',
+    'key',
   ];
 
   /**
@@ -34,9 +35,19 @@ class RedirectTest extends WebDriverTestBase {
 
     // Always pass the turnstile
     // https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+    $this->config('key.key.turnstile')
+      ->set('id', 'turnstile')
+      ->set('label', 'turnstile')
+      ->set('key_type', 'authentication_multivalue')
+      ->set('key_provider', 'config')
+      ->set('key_provider_settings' [
+        'key_value' => '{"site_key": "1x00000000000000000000AA", "secret_key": "1x0000000000000000000000000000000AA"}'
+      ])
+      ->set('key_input', 'textarea_field')
+      ->save();
+
     $this->config('turnstile.settings')
-      ->set('site_key', '1x00000000000000000000AA')
-      ->set('secret_key', '1x0000000000000000000000000000000AA')
+      ->set('keys', 'turnstile')
       ->save();
 
     $config = $this->config('turnstile_protect.settings')
