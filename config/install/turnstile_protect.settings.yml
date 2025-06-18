@@ -16,8 +16,8 @@ bots: [
   "apple.com"
 ]
 protect_parameters: false
-rate_limit: true
+rate_limit: false
 window: 86400
-threshold: 20
+threshold: 5
 max_challenges: 5
 history_enabled: false
