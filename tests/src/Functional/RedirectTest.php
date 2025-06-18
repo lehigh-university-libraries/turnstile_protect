@@ -46,7 +46,7 @@ class RedirectTest extends WebDriverTestBase {
       ->set('key_input', 'textarea_field')
       ->save();
 
-    $this->config('turnstile.settings')=======
+    $this->config('turnstile.settings')
       ->set('keys', 'turnstile')
       ->set('turnstile_src', 'https://challenges.cloudflare.com/turnstile/v0/api.js')
       ->save();
