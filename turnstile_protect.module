@@ -11,7 +11,7 @@
 function turnstile_protect_library_info_alter(&$libraries, $extension) {
   $config = \Drupal::config('turnstile.settings');
   $turnstile_src = $config->get('turnstile_src');
-  if (isset($libraries['turnstile']['js'][$turnstile_src])) {
+  if (isset($libraries['turnstile.remote']['js'][$turnstile_src])) {
     $libraries['turnstile']['js'][$turnstile_src]['attributes']['referrerpolicy'] = 'no-referrer';
   }
 }
