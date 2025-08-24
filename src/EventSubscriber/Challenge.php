@@ -2,6 +2,7 @@
 
 namespace Drupal\turnstile_protect\EventSubscriber;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Flood\FloodInterface;
@@ -48,6 +49,13 @@ class Challenge implements EventSubscriberInterface {
   protected $logger;
 
   /**
+   * The Drupal cache service.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cache;
+
+  /**
    * Constructs the event subscriber.
    *
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
@@ -58,12 +66,15 @@ class Challenge implements EventSubscriberInterface {
    *   The config factory service.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The Drupal cache service.
    */
-  public function __construct(LoggerChannelFactoryInterface $logger_factory, FloodInterface $flood, ConfigFactoryInterface $config_factory, AccountProxyInterface $current_user) {
+  public function __construct(LoggerChannelFactoryInterface $logger_factory, FloodInterface $flood, ConfigFactoryInterface $config_factory, AccountProxyInterface $current_user, CacheBackendInterface $cache) {
     $this->logger = $logger_factory->get('turnstile_protect');
     $this->flood = $flood;
     $this->configFactory = $config_factory;
     $this->currentUser = $current_user;
+    $this->cache = $cache;
   }
 
   /**
@@ -100,21 +111,14 @@ class Challenge implements EventSubscriberInterface {
     if (captcha_whitelist_ip_whitelisted($clientIp)) {
       return FALSE;
     }
-    // See if the client IP resolves to a good bot.
-    $hostname = gethostbyaddr($clientIp);
-    // Being sure to lookup the domain to avoid spoofing.
-    $resolved_ip = gethostbyname($hostname);
-    if ($clientIp !== $resolved_ip) {
-      if ($clientIp !== '127.0.0.1') {
-        return TRUE;
-      }
+
+    $hostname = $clientIp !== '127.0.0.1' ? self::getHostname($clientIp, $hostname) : "localhost.localdomain";
+    // Need at least a second level domain.
+    if (strpos($hostname, ".") === FALSE) {
+      return TRUE;
     }
+
     $parts = explode(".", $hostname);
-    if (count($parts) < 2) {
-      if ($clientIp !== '127.0.0.1') {
-        return TRUE;
-      }
-    }
     $tld = array_pop($parts);
     $hostname = array_pop($parts) . '.' . $tld;
     if (in_array($hostname, $config->get('bots'))) {
@@ -231,6 +235,27 @@ class Challenge implements EventSubscriberInterface {
     }
 
     return $expanded;
+  }
+
+  /**
+   * Helper function to cache DNS lookups on an IP.
+   */
+  public static function getHostName($clientIp) {
+    $cid = 'turnstile_protect:' . $clientIp;
+    $cache = $this->cache->get($cid);
+    if ($cache) {
+      return $cache->data;
+    }
+
+    $hostname = gethostbyaddr($clientIp);
+    $resolvedIp = gethostbyname($hostname);
+    // Ensure the hostname isn't a reverse DNS spoof.
+    if ($clientIp !== $resolvedIp && $clientIp !== '127.0.0.1') {
+      $hostname = "";
+    }
+    $this->cache->set($cid, $hostname);
+
+    return $hostname;
   }
 
 }
